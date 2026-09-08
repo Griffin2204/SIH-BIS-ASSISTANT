@@ -1,0 +1,2 @@
+# Document and OCR
+Build PDF, brochure, certificate, and product-document upload. Include drag-and-drop, validation, progress, OCR/extraction status, queued/processing/completed/failed states, extracted-text preview, identified product details, applicable-standard suggestions, document list, delete, and retry. Use mock processing until OCR and document APIs are connected.

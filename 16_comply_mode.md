@@ -1,0 +1,2 @@
+# COMPLY Mode
+Build a producer compliance workspace with product information form, applicable-standard recommendations, step-by-step requirements, compliance checklist, document upload, form pre-fill assistant, certification progress tracker, status timeline, missing-document alerts, and what-if compliance simulator. Show completed, pending, and blocked tasks, required documents, applicable standards, and official references. Use mock data and label simulated results clearly.

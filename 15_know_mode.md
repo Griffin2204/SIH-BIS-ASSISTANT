@@ -1,0 +1,2 @@
+# KNOW Mode
+Build a guided experience for identifying applicable Indian Standards. Include conversational questions about product type, material, use, industry, market, and application. Add search by IS number, part, section, year, title, or laboratory. Support text, voice, and PDF input. Show standard number, title, scope, categories, official source, citations, and suggested follow-up questions. Clearly distinguish confirmed information from suggestions. Use mock data until the RAG backend is connected.

@@ -1,0 +1,2 @@
+# Trust and Safety
+Add official citations, confidence-aware responses, low-confidence fallback, BIS helpdesk escalation, certification/legal disclaimer, outdated-information warning, source verification links, feedback categories, and support for revised-standard version tracking. Never invent standard numbers, licence details, dates, fees, or requirements. Clearly label simulated verification results.

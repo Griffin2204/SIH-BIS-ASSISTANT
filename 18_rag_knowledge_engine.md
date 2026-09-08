@@ -1,0 +1,2 @@
+# RAG Knowledge Engine
+Prepare the frontend and API contracts for: official BIS sources → ingestion → extraction → chunking → embeddings → vector database → retrieval → LLM with guardrails → cited answer. Display answer, source title, standard number, page or section, confidence, view-source action, and report-incorrect-answer action. Prepare endpoints such as POST /api/chat, POST /api/search, POST /api/standards/recommend, POST /api/documents/upload, and GET /api/verification/status. Never expose API keys.

@@ -1,0 +1,2 @@
+# SIH Demo Readiness
+Prepare a complete demo: select a regional language; ask a standards question; show cited official sources; upload a brochure/PDF; display applicable standards and checklist; verify a licence or HUID; show confidence-aware results; and demonstrate helpdesk fallback for low-confidence answers. Add reliable mock data and ensure no broken buttons. Do not claim live functionality that is not implemented.

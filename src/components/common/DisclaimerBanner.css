@@ -1,0 +1,33 @@
+.disclaimer-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background-color: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--blue-600);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.disclaimer-icon {
+  color: var(--blue-600);
+  margin-top: 0.1rem;
+}
+
+.disclaimer-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.disclaimer-title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--navy-900);
+}
+
+.disclaimer-body {
+  font-size: 0.785rem;
+  color: var(--text-secondary);
+}

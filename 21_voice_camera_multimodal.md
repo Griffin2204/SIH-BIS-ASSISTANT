@@ -1,0 +1,2 @@
+# Voice, Camera, and Multi-modal Input
+Add text, voice, camera, image, and PDF input controls. Include microphone permission state, recording indicator, image/PDF preview, remove/replace actions, processing progress, and errors. Implement mock interactions now and prepare components for speech recognition, OCR, image analysis, and document extraction integration.

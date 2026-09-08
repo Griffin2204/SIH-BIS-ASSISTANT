@@ -1,0 +1,2 @@
+# Producer and Consumer Dashboards
+Create a producer dashboard with active applications, certification progress, compliance checklist, missing documents, applicable standards, recent searches, verification history, and revised-standard alerts. Create a consumer dashboard with licence history, HUID/hallmark checks, saved products, recent searches, suspicious-mark reporting, helpful BIS links, and clear status explanations. Use responsive mock data.

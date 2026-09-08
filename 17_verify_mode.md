@@ -1,0 +1,2 @@
+# VERIFY Mode
+Build verification tools for BIS licence numbers, producer credentials, HUID, hallmarks, product authenticity, and BIS/ISI marks. Include camera or image-upload placeholder for future fake-mark detection, result cards, verified/invalid/expired/unable-to-verify states, official source links, and a consumer trust dashboard. Use mock results initially and clearly state that they are not official until live BIS integration exists.

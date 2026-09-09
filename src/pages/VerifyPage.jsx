@@ -9,6 +9,7 @@ import DisclaimerBanner from '../components/common/DisclaimerBanner';
 import ConsumerDashboardPage from './ConsumerDashboardPage';
 import CameraCaptureModal from '../components/common/CameraCaptureModal';
 import { verifyLicenceOrHuid } from '../api/client';
+import { useLanguage } from '../context/LanguageContext';
 import {
   UserCheck,
   CheckCircle2,
@@ -18,7 +19,6 @@ import {
   ExternalLink,
   MapPin,
   Calendar,
-  Building2,
   Camera,
   AlertTriangle
 } from 'lucide-react';
@@ -26,14 +26,15 @@ import './VerifyPage.css';
 
 export function VerifyPage({ defaultSubTab = 'licence' }) {
   const [activeTab, setActiveTab] = useState(defaultSubTab);
+  const { t } = useLanguage();
 
   return (
     <div className="verify-page">
       <PageHeader
-        title="VERIFY Mode — Consumer Protection & Audit Portal"
+        title={`${t('navVerify')} — ${t('verifyTitle')}`}
         description="Verify 7-digit CML producer licences, 6-character gold HUID hallmarks, and spot counterfeit ISI marks."
-        breadcrumbs={['Portal', 'VERIFY Mode']}
-        badge={<Badge variant="success" dot>Realtime Lookup</Badge>}
+        breadcrumbs={['Portal', t('navVerify')]}
+        badge={<Badge variant="success" dot>{t('systemOnline')}</Badge>}
       />
 
       <DisclaimerBanner />
@@ -46,7 +47,7 @@ export function VerifyPage({ defaultSubTab = 'licence' }) {
           onClick={() => setActiveTab('dashboard')}
         >
           <UserCheck size={18} />
-          <span>Consumer Dashboard</span>
+          <span>{t('navConsumerDash')}</span>
         </button>
 
         <button
@@ -55,7 +56,7 @@ export function VerifyPage({ defaultSubTab = 'licence' }) {
           onClick={() => setActiveTab('licence')}
         >
           <CheckCircle2 size={18} />
-          <span>BIS CML Licence Verifier</span>
+          <span>{t('navCmlVerifier')}</span>
         </button>
 
         <button
@@ -64,7 +65,7 @@ export function VerifyPage({ defaultSubTab = 'licence' }) {
           onClick={() => setActiveTab('huid')}
         >
           <Award size={18} />
-          <span>HUID Gold Hallmark Check</span>
+          <span>{t('navHuidCheck')}</span>
         </button>
 
         <button
@@ -73,7 +74,7 @@ export function VerifyPage({ defaultSubTab = 'licence' }) {
           onClick={() => setActiveTab('fake-detector')}
         >
           <ShieldAlert size={18} />
-          <span>Fake BIS Mark Detector</span>
+          <span>{t('navFakeDetector')}</span>
         </button>
       </div>
 
@@ -88,6 +89,7 @@ export function VerifyPage({ defaultSubTab = 'licence' }) {
 
 /* 1. CML LICENCE VERIFIER PANEL */
 function CmlLicencePanel() {
+  const { t } = useLanguage();
   const [cmlNumber, setCmlNumber] = useState('7800012345');
   const [result, setResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -109,7 +111,7 @@ function CmlLicencePanel() {
 
   return (
     <div className="cml-panel">
-      <Card title="BIS CML Manufacturer Licence Verifier" subtitle="Validate the 7-to-10 digit CML number printed directly under the ISI mark on any product.">
+      <Card title={t('navCmlVerifier')} subtitle="Validate the 7-to-10 digit CML number printed directly under the ISI mark on any product.">
         <div className="cml-search-box">
           <SearchInput
             value={cmlNumber}
@@ -119,7 +121,7 @@ function CmlLicencePanel() {
             size="lg"
           />
           <Button variant="primary" icon={Search} onClick={() => handleVerify()} isLoading={isLoading}>
-            Verify Licence
+            {t('verifyLicenceBtn')}
           </Button>
         </div>
 
@@ -198,6 +200,7 @@ function CmlLicencePanel() {
 
 /* 2. HUID HALLMARK PANEL */
 function HuidPanel() {
+  const { t } = useLanguage();
   const [huidCode, setHuidCode] = useState('AB1234');
   const [result, setResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -219,7 +222,7 @@ function HuidPanel() {
 
   return (
     <div className="huid-panel">
-      <Card title="Gold & Silver Hallmarking HUID Verifier" subtitle="Enter the 6-character alphanumeric Hallmarking Unique ID (HUID) laser etched on your jewelry item.">
+      <Card title={t('navHuidCheck')} subtitle="Enter the 6-character alphanumeric Hallmarking Unique ID (HUID) laser etched on your jewelry item.">
         <div className="cml-search-box">
           <SearchInput
             value={huidCode}
@@ -229,7 +232,7 @@ function HuidPanel() {
             size="lg"
           />
           <Button variant="primary" icon={Search} onClick={() => handleVerify()} isLoading={isLoading}>
-            Verify HUID
+            {t('verifyHuidBtn')}
           </Button>
         </div>
 
@@ -294,11 +297,12 @@ function HuidPanel() {
 
 /* 3. FAKE DETECTOR PANEL */
 function FakeDetectorPanel() {
+  const { t } = useLanguage();
   const [isCameraOpen, setIsCameraOpen] = useState(false);
 
   return (
     <div className="fake-detector-panel">
-      <Card title="Fake BIS Mark & Counterfeit Detector" subtitle="Spot counterfeit ISI marks and report unauthorized usage to the Bureau of Indian Standards.">
+      <Card title={t('navFakeDetector')} subtitle="Spot counterfeit ISI marks and report unauthorized usage to the Bureau of Indian Standards.">
         <div className="checklist-box mb-6">
           <h4 className="box-title">3 Elements Required on Every Genuine ISI Mark:</h4>
           <div className="elements-grid">
@@ -333,7 +337,7 @@ function FakeDetectorPanel() {
           <h4 className="scan-title">Scan Product Mark Using Camera / Image Upload</h4>
           <p className="scan-desc">Our AI image model analyzes the logo geometry and CML number for authenticity.</p>
           <Button variant="primary" icon={Camera} onClick={() => setIsCameraOpen(true)} className="mt-3">
-            Open Mark Scanner Camera
+            {t('captureSnapshotBtn')}
           </Button>
         </div>
       </Card>

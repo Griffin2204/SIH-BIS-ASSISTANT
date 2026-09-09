@@ -13,6 +13,7 @@ import CameraCaptureModal from '../components/common/CameraCaptureModal';
 import { sendChatMessage, searchStandards, recommendStandards } from '../api/client';
 import { CATEGORIES } from '../data/mockStandards';
 import { MOCK_SUGGESTED_QUESTIONS } from '../data/mockChat';
+import { useLanguage } from '../context/LanguageContext';
 import {
   Bot,
   Send,
@@ -21,14 +22,12 @@ import {
   Check,
   Mic,
   Camera,
-  Paperclip,
   FileSearch,
   Sparkles,
   Compass,
   ExternalLink,
   ChevronDown,
   ChevronUp,
-  Info,
   ShieldCheck
 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
@@ -37,8 +36,8 @@ import './KnowPage.css';
 export function KnowPage({ defaultSubTab = 'chat' }) {
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(defaultSubTab);
+  const { t } = useLanguage();
 
-  // Sync tab if search param comes in
   useEffect(() => {
     if (searchParams.get('search')) {
       setActiveTab('search');
@@ -48,10 +47,10 @@ export function KnowPage({ defaultSubTab = 'chat' }) {
   return (
     <div className="know-page">
       <PageHeader
-        title="KNOW Mode — Intelligence & Discovery"
+        title={`${t('navKnow')} — ${t('knowTitle')}`}
         description="Conversational AI guidance, semantic Indian Standards discovery, and trustworthy BIS regulatory repository."
-        breadcrumbs={['Portal', 'KNOW Mode']}
-        badge={<Badge variant="blue" dot>RAG Guardrailed</Badge>}
+        breadcrumbs={['Portal', t('navKnow')]}
+        badge={<Badge variant="blue" dot>{t('ragGuardrailed')}</Badge>}
       />
 
       <DisclaimerBanner />
@@ -64,7 +63,7 @@ export function KnowPage({ defaultSubTab = 'chat' }) {
           onClick={() => setActiveTab('chat')}
         >
           <Bot size={18} />
-          <span>Ask AI Assistant</span>
+          <span>{t('navAskAi')}</span>
         </button>
 
         <button
@@ -73,7 +72,7 @@ export function KnowPage({ defaultSubTab = 'chat' }) {
           onClick={() => setActiveTab('search')}
         >
           <FileSearch size={18} />
-          <span>Smart Standards Search</span>
+          <span>{t('navSmartSearch')}</span>
         </button>
 
         <button
@@ -82,7 +81,7 @@ export function KnowPage({ defaultSubTab = 'chat' }) {
           onClick={() => setActiveTab('discovery')}
         >
           <Sparkles size={18} />
-          <span>AI Discovery Interview</span>
+          <span>{t('navDiscovery')}</span>
         </button>
 
         <button
@@ -91,7 +90,7 @@ export function KnowPage({ defaultSubTab = 'chat' }) {
           onClick={() => setActiveTab('faq')}
         >
           <Compass size={18} />
-          <span>Trustworthy FAQ</span>
+          <span>{t('navFaq')}</span>
         </button>
       </div>
 
@@ -106,6 +105,7 @@ export function KnowPage({ defaultSubTab = 'chat' }) {
 
 /* 1. CHAT TAB PANEL */
 function ChatTabPanel() {
+  const { t } = useLanguage();
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -187,16 +187,16 @@ function ChatTabPanel() {
       <div className="chat-header-toolbar">
         <span className="chat-status-text">
           <ShieldCheck size={16} className="text-success" />
-          RAG Guardrailed Mode Active
+          {t('ragGuardrailed')} Active
         </span>
         <Button variant="ghost" size="sm" icon={Trash2} onClick={handleClear}>
-          Clear Chat
+          {t('clearChatBtn')}
         </Button>
       </div>
 
       {/* Suggested Questions */}
       <div className="suggested-questions-row">
-        <span className="suggested-label">Suggested Queries:</span>
+        <span className="suggested-label">{t('suggestedQueriesLabel')}</span>
         <div className="suggested-chips">
           {MOCK_SUGGESTED_QUESTIONS.map((q, idx) => (
             <button key={idx} type="button" className="suggested-chip" onClick={() => handleSend(q)}>
@@ -216,7 +216,7 @@ function ChatTabPanel() {
 
             <div className="chat-bubble-content">
               <div className="bubble-header">
-                <span className="bubble-author">{msg.sender === 'bot' ? 'BIS Assistant' : 'User'}</span>
+                <span className="bubble-author">{msg.sender === 'bot' ? t('appTitle') : 'User'}</span>
                 <span className="bubble-time">{msg.timestamp}</span>
               </div>
 
@@ -244,7 +244,7 @@ function ChatTabPanel() {
                     onClick={() => handleCopy(msg.id, msg.text)}
                   >
                     {copiedId === msg.id ? <Check size={14} color="#16a34a" /> : <Copy size={14} />}
-                    <span>{copiedId === msg.id ? 'Copied' : 'Copy Answer'}</span>
+                    <span>{copiedId === msg.id ? t('copiedBtn') : t('copyAnswerBtn')}</span>
                   </button>
                 </div>
               )}
@@ -276,7 +276,7 @@ function ChatTabPanel() {
         <input
           type="text"
           className="chat-text-input"
-          placeholder="Ask a technical question about Indian Standards (e.g. IS 10500 limits)..."
+          placeholder={t('searchPlaceholder')}
           value={inputQuery}
           onChange={(e) => setInputQuery(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSend()}
@@ -288,14 +288,14 @@ function ChatTabPanel() {
           onClick={() => handleSend()}
           disabled={!inputQuery.trim() || isLoading}
         >
-          Send
+          {t('sendBtn')}
         </Button>
       </div>
 
       <VoiceInputModal
         isOpen={isVoiceOpen}
         onClose={() => setIsVoiceOpen(false)}
-        onTranscriptSubmit={(t) => { setInputQuery(t); handleSend(t); }}
+        onTranscriptSubmit={(tText) => { setInputQuery(tText); handleSend(tText); }}
       />
 
       <CameraCaptureModal
@@ -311,6 +311,7 @@ function ChatTabPanel() {
 
 /* 2. SEARCH TAB PANEL */
 function SearchTabPanel({ initialQuery }) {
+  const { t } = useLanguage();
   const [query, setQuery] = useState(initialQuery || '');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [mandatoryOnly, setMandatoryOnly] = useState(false);
@@ -344,14 +345,14 @@ function SearchTabPanel({ initialQuery }) {
           <SearchInput
             value={query}
             onChange={setQuery}
-            placeholder="Search IS standards by code, title, or keyword..."
+            placeholder={t('searchPlaceholder')}
             size="lg"
           />
         </div>
 
         <div className="filters-row">
           <div className="filter-group">
-            <label className="filter-label">Category Filter:</label>
+            <label className="filter-label">{t('filterCategory')}</label>
             <select
               className="filter-select"
               value={selectedCategory}
@@ -369,7 +370,7 @@ function SearchTabPanel({ initialQuery }) {
               checked={mandatoryOnly}
               onChange={(e) => setMandatoryOnly(e.target.checked)}
             />
-            <span>Mandatory Certification Standards Only</span>
+            <span>{t('mandatoryOnlyCheck')}</span>
           </label>
         </div>
       </div>
@@ -402,7 +403,7 @@ function SearchTabPanel({ initialQuery }) {
 
               <div className="standard-card-footer">
                 <Button variant="outline" size="sm" onClick={() => setSelectedStandard(st)}>
-                  View Parameters & Scope
+                  {t('viewParametersBtn')}
                 </Button>
                 {st.officialUrl && (
                   <a href={st.officialUrl} target="_blank" rel="noopener noreferrer" className="pdf-link-btn">

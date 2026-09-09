@@ -1,0 +1,123 @@
+.portal-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.portal-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.stat-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bg-blue-50 { background-color: var(--blue-50); }
+.bg-green-50 { background-color: var(--color-success-bg); }
+.bg-amber-50 { background-color: var(--color-warning-bg); }
+.bg-navy-50 { background-color: var(--bg-subtle); }
+
+.stat-num {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--navy-900);
+  line-height: 1.2;
+  display: block;
+}
+
+.stat-name {
+  font-size: 0.775rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.modes-launchpad-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.mode-launch-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-top: 4px solid transparent;
+}
+
+.mode-launch-card.know-theme { border-top-color: var(--blue-600); }
+.mode-launch-card.comply-theme { border-top-color: var(--navy-900); }
+.mode-launch-card.verify-theme { border-top-color: var(--color-success); }
+
+.mode-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.mode-icon-box {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  background-color: var(--blue-50);
+  color: var(--blue-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mode-card-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--navy-900);
+  margin-bottom: 0.5rem;
+}
+
+.mode-card-desc {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 1.25rem;
+}
+
+.mode-card-footer {
+  pt-top: 0.75rem;
+  border-top: 1px solid var(--border-light);
+}
+
+.mode-link-text {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--blue-600);
+}
+
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.tool-shortcut-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.tool-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--navy-900);
+  margin-bottom: 0.25rem;
+}
+
+.tool-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}

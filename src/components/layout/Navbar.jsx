@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import './Navbar.css';
 import { ShieldCheck, Menu, Bell, User, Mic, Camera } from 'lucide-react';
 import SearchInput from '../ui/SearchInput';
-import Badge from '../ui/Badge';
 import MultilingualSelector from '../common/MultilingualSelector';
 import VoiceInputModal from '../common/VoiceInputModal';
 import CameraCaptureModal from '../common/CameraCaptureModal';
 import { NavLink } from 'react-router-dom';
+import { useLanguage } from '../../context/LanguageContext';
 
 export function Navbar({ onMenuToggle, searchValue, onSearchChange, onSearchSubmit }) {
+  const { t } = useLanguage();
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
 
@@ -39,20 +40,20 @@ export function Navbar({ onMenuToggle, searchValue, onSearchChange, onSearchSubm
               <ShieldCheck size={24} color="#ffffff" />
             </div>
             <div className="navbar-title-group">
-              <h1 className="navbar-title">BIS AI Assistant</h1>
-              <span className="navbar-subtitle">GovTech Portal</span>
+              <h1 className="navbar-title">{t('appTitle')}</h1>
+              <span className="navbar-subtitle">{t('portalSub')}</span>
             </div>
           </NavLink>
 
           <nav className="mode-switcher-nav">
             <NavLink to="/know" className={({ isActive }) => `mode-pill ${isActive ? 'active' : ''}`}>
-              KNOW
+              {t('navKnow')}
             </NavLink>
             <NavLink to="/comply" className={({ isActive }) => `mode-pill ${isActive ? 'active' : ''}`}>
-              COMPLY
+              {t('navComply')}
             </NavLink>
             <NavLink to="/verify" className={({ isActive }) => `mode-pill ${isActive ? 'active' : ''}`}>
-              VERIFY
+              {t('navVerify')}
             </NavLink>
           </nav>
         </div>
@@ -62,7 +63,7 @@ export function Navbar({ onMenuToggle, searchValue, onSearchChange, onSearchSubm
             value={searchValue}
             onChange={onSearchChange}
             onSubmit={onSearchSubmit}
-            placeholder="Search IS codes, CML licence, products..."
+            placeholder={t('searchPlaceholder')}
             size="sm"
           />
         </div>
@@ -95,8 +96,8 @@ export function Navbar({ onMenuToggle, searchValue, onSearchChange, onSearchSubm
               <User size={18} />
             </div>
             <div className="user-info">
-              <span className="user-name">BIS Official</span>
-              <span className="user-role">Government Admin</span>
+              <span className="user-name">{t('officialRole')}</span>
+              <span className="user-role">{t('adminTitle')}</span>
             </div>
           </div>
         </div>

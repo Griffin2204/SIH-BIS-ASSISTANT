@@ -1,6 +1,7 @@
 import React from 'react';
 import './Sidebar.css';
 import { NavLink } from 'react-router-dom';
+import { useLanguage } from '../../context/LanguageContext';
 import {
   LayoutDashboard,
   Bot,
@@ -17,54 +18,55 @@ import {
   Award,
   Upload,
   UserCheck,
-  Building2,
-  History
+  Building2
 } from 'lucide-react';
 
-export const NAV_GROUPS = [
-  {
-    groupTitle: 'PORTAL HUB',
-    items: [
-      { path: '/', label: 'Overview Dashboard', icon: LayoutDashboard }
-    ]
-  },
-  {
-    groupTitle: '1. KNOW MODE',
-    items: [
-      { path: '/know/chat', label: 'Ask AI Assistant', icon: Bot, badge: 'RAG' },
-      { path: '/know/search', label: 'Smart Standards Search', icon: FileSearch },
-      { path: '/know/discovery', label: 'AI Discovery Interview', icon: Sparkles },
-      { path: '/know/faq', label: 'Trustworthy FAQ', icon: Compass }
-    ]
-  },
-  {
-    groupTitle: '2. COMPLY MODE',
-    items: [
-      { path: '/comply/dashboard', label: 'Producer Dashboard', icon: Building2 },
-      { path: '/comply/analyzer', label: 'Product Specs Analyzer', icon: Search },
-      { path: '/comply/prefill', label: 'Form Pre-fill Assistant', icon: FileText },
-      { path: '/comply/tracker', label: 'Certification Tracker', icon: Award }
-    ]
-  },
-  {
-    groupTitle: '3. VERIFY MODE',
-    items: [
-      { path: '/verify/dashboard', label: 'Consumer Dashboard', icon: UserCheck },
-      { path: '/verify/licence', label: 'BIS CML Licence Verifier', icon: CheckCircle2 },
-      { path: '/verify/huid', label: 'HUID Gold Hallmark Check', icon: Award },
-      { path: '/verify/fake-detector', label: 'Fake Mark Detector', icon: ShieldAlert }
-    ]
-  },
-  {
-    groupTitle: 'DOCUMENTS & UTILITIES',
-    items: [
-      { path: '/documents', label: 'Document Upload & OCR', icon: Upload },
-      { path: '/feedback', label: 'Feedback & Support', icon: MessageSquare }
-    ]
-  }
-];
-
 export function Sidebar({ isOpen, onClose }) {
+  const { t } = useLanguage();
+
+  const NAV_GROUPS = [
+    {
+      groupTitle: 'PORTAL HUB',
+      items: [
+        { path: '/', labelKey: 'navOverview', icon: LayoutDashboard }
+      ]
+    },
+    {
+      groupTitle: '1. KNOW MODE',
+      items: [
+        { path: '/know/chat', labelKey: 'navAskAi', icon: Bot, badge: 'RAG' },
+        { path: '/know/search', labelKey: 'navSmartSearch', icon: FileSearch },
+        { path: '/know/discovery', labelKey: 'navDiscovery', icon: Sparkles },
+        { path: '/know/faq', labelKey: 'navFaq', icon: Compass }
+      ]
+    },
+    {
+      groupTitle: '2. COMPLY MODE',
+      items: [
+        { path: '/comply/dashboard', labelKey: 'navProducerDash', icon: Building2 },
+        { path: '/comply/analyzer', labelKey: 'navProductAnalyzer', icon: Search },
+        { path: '/comply/prefill', labelKey: 'navFormPrefill', icon: FileText },
+        { path: '/comply/tracker', labelKey: 'navCertTracker', icon: Award }
+      ]
+    },
+    {
+      groupTitle: '3. VERIFY MODE',
+      items: [
+        { path: '/verify/dashboard', labelKey: 'navConsumerDash', icon: UserCheck },
+        { path: '/verify/licence', labelKey: 'navCmlVerifier', icon: CheckCircle2 },
+        { path: '/verify/huid', labelKey: 'navHuidCheck', icon: Award },
+        { path: '/verify/fake-detector', labelKey: 'navFakeDetector', icon: ShieldAlert }
+      ]
+    },
+    {
+      groupTitle: 'DOCUMENTS & UTILITIES',
+      items: [
+        { path: '/documents', labelKey: 'navDocUpload', icon: Upload },
+        { path: '/feedback', labelKey: 'navFeedback', icon: MessageSquare }
+      ]
+    }
+  ];
+
   return (
     <>
       {isOpen && <div className="sidebar-backdrop" onClick={onClose} aria-hidden="true" />}
@@ -93,7 +95,7 @@ export function Sidebar({ isOpen, onClose }) {
                     onClick={onClose}
                   >
                     <Icon className="sidebar-link-icon" size={18} />
-                    <span className="sidebar-link-label">{item.label}</span>
+                    <span className="sidebar-link-label">{t(item.labelKey)}</span>
                     {item.badge && <span className="sidebar-link-badge">{item.badge}</span>}
                   </NavLink>
                 );

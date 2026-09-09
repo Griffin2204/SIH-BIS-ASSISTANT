@@ -6,31 +6,31 @@ import Badge from '../components/ui/Badge';
 import DisclaimerBanner from '../components/common/DisclaimerBanner';
 import ProducerDashboardPage from './ProducerDashboardPage';
 import { MOCK_STANDARDS } from '../data/mockStandards';
+import { useLanguage } from '../context/LanguageContext';
 import {
   Building2,
   Search,
   FileText,
   Award,
   CheckCircle2,
-  AlertTriangle,
   ArrowRight,
   FileCheck,
   Zap,
-  Sliders,
-  Plus
+  Sliders
 } from 'lucide-react';
 import './ComplyPage.css';
 
 export function ComplyPage({ defaultSubTab = 'dashboard' }) {
   const [activeTab, setActiveTab] = useState(defaultSubTab);
+  const { t } = useLanguage();
 
   return (
     <div className="comply-page">
       <PageHeader
-        title="COMPLY Mode — Producer & Manufacturer Portal"
+        title={`${t('navComply')} — ${t('complyTitle')}`}
         description="Streamline BIS ISI mark and CRS registration, test parameter compliance analysis, form pre-fill, and application tracking."
-        breadcrumbs={['Portal', 'COMPLY Mode']}
-        badge={<Badge variant="navy" dot>Producer Hub</Badge>}
+        breadcrumbs={['Portal', t('navComply')]}
+        badge={<Badge variant="navy" dot>{t('navProducerDash')}</Badge>}
       />
 
       <DisclaimerBanner />
@@ -43,7 +43,7 @@ export function ComplyPage({ defaultSubTab = 'dashboard' }) {
           onClick={() => setActiveTab('dashboard')}
         >
           <Building2 size={18} />
-          <span>Producer Dashboard</span>
+          <span>{t('navProducerDash')}</span>
         </button>
 
         <button
@@ -52,7 +52,7 @@ export function ComplyPage({ defaultSubTab = 'dashboard' }) {
           onClick={() => setActiveTab('analyzer')}
         >
           <Search size={18} />
-          <span>Smart Product Analyzer</span>
+          <span>{t('navProductAnalyzer')}</span>
         </button>
 
         <button
@@ -61,7 +61,7 @@ export function ComplyPage({ defaultSubTab = 'dashboard' }) {
           onClick={() => setActiveTab('prefill')}
         >
           <FileText size={18} />
-          <span>Form Pre-fill Assistant</span>
+          <span>{t('navFormPrefill')}</span>
         </button>
 
         <button
@@ -70,7 +70,7 @@ export function ComplyPage({ defaultSubTab = 'dashboard' }) {
           onClick={() => setActiveTab('tracker')}
         >
           <Award size={18} />
-          <span>Certification Tracker & Simulator</span>
+          <span>{t('navCertTracker')}</span>
         </button>
       </div>
 
@@ -85,6 +85,7 @@ export function ComplyPage({ defaultSubTab = 'dashboard' }) {
 
 /* 1. PRODUCT ANALYZER PANEL */
 function ProductAnalyzerPanel() {
+  const { t } = useLanguage();
   const [selectedStandard, setSelectedStandard] = useState(MOCK_STANDARDS[0]);
   const [inputTds, setInputTds] = useState('350');
   const [inputPh, setInputPh] = useState('7.4');
@@ -114,7 +115,7 @@ function ProductAnalyzerPanel() {
 
   return (
     <div className="analyzer-panel">
-      <Card title="Smart Product Parameter Compliance Analyzer" subtitle="Test your factory lab output parameters against mandatory IS specifications prior to official audit.">
+      <Card title={t('navProductAnalyzer')} subtitle="Test your factory lab output parameters against mandatory IS specifications prior to official audit.">
         <div className="analyzer-form">
           <div className="form-group">
             <label className="form-label">Target Indian Standard:</label>
@@ -147,7 +148,7 @@ function ProductAnalyzerPanel() {
           </div>
 
           <Button variant="primary" icon={Zap} onClick={handleRunAnalysis}>
-            Evaluate Compliance Against {selectedStandard.code}
+            {t('evaluateComplianceBtn')}
           </Button>
         </div>
 
@@ -200,6 +201,7 @@ function ProductAnalyzerPanel() {
 
 /* 2. FORM PREFILL PANEL */
 function FormPrefillPanel() {
+  const { t } = useLanguage();
   const [formState, setFormState] = useState({
     companyName: 'AquaPure Bottlers India Pvt Ltd',
     factoryAddress: 'Plot 42, MIDC Chakan, Pune, Maharashtra',
@@ -215,10 +217,10 @@ function FormPrefillPanel() {
 
   return (
     <div className="prefill-panel">
-      <Card title="BIS Application Form 1 Pre-fill Assistant" subtitle="Automatically populates official Manakonline application fields from uploaded test reports and GST certificates.">
+      <Card title={t('navFormPrefill')} subtitle="Automatically populates official Manakonline application fields from uploaded test reports and GST certificates.">
         <div className="prefill-toolbar mb-4">
           <Button variant="secondary" icon={FileCheck} onClick={handlePrefillFromDoc}>
-            Pre-fill From Uploaded Document
+            {t('prefillDocBtn')}
           </Button>
           {isPrefilled && <Badge variant="success">Metadata Extracted (98% Accuracy)</Badge>}
         </div>

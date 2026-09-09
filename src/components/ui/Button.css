@@ -9,6 +9,12 @@
   transition: all var(--transition-fast);
   white-space: nowrap;
   user-select: none;
+  font-family: inherit;
+  outline: none;
+}
+
+.btn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
 }
 
 .btn:disabled {
@@ -16,20 +22,23 @@
   cursor: not-allowed;
 }
 
-/* Sizes */
+/* Standardized Button Sizes */
 .btn-sm {
-  padding: 0.375rem 0.75rem;
+  height: 32px;
+  padding: 0 0.75rem;
   font-size: 0.8125rem;
 }
 
 .btn-md {
-  padding: 0.5rem 1rem;
+  height: 38px;
+  padding: 0 1rem;
   font-size: 0.875rem;
 }
 
 .btn-lg {
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
+  height: 44px;
+  padding: 0 1.25rem;
+  font-size: 0.95rem;
 }
 
 /* Variants */
@@ -56,14 +65,15 @@
 }
 
 .btn-outline {
-  background-color: transparent;
+  background-color: var(--bg-surface);
   color: var(--text-primary);
   border-color: var(--border-color);
 }
 
 .btn-outline:hover:not(:disabled) {
   background-color: var(--bg-subtle);
-  border-color: var(--text-muted);
+  border-color: var(--border-color);
+  color: var(--blue-600);
 }
 
 .btn-danger {

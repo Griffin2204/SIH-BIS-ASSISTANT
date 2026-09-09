@@ -1,33 +1,38 @@
 .card {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
 }
 
 .card-padding-normal .card-body {
-  padding: 1.5rem;
+  padding: 1.25rem;
 }
 
 .card-padding-compact .card-body {
-  padding: 1rem;
+  padding: 0.875rem;
 }
 
 .card-padding-none .card-body {
   padding: 0;
 }
 
+.card-hoverable {
+  cursor: pointer;
+}
+
 .card-hoverable:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
+  border-color: #cbd5e1;
 }
 
 .card-header {
-  padding: 1.25rem 1.5rem;
+  padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--border-light);
   display: flex;
   align-items: center;
@@ -36,15 +41,15 @@
 }
 
 .card-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--navy-900);
 }
 
 .card-subtitle {
-  font-size: 0.85rem;
+  font-size: 0.8125rem;
   color: var(--text-muted);
-  margin-top: 0.2rem;
+  margin-top: 0.15rem;
 }
 
 .card-body {
@@ -52,7 +57,7 @@
 }
 
 .card-footer {
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1.25rem;
   border-top: 1px solid var(--border-light);
   background-color: var(--bg-subtle);
 }

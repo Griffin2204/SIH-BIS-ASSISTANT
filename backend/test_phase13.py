@@ -477,7 +477,7 @@ def run_phase13_tests() -> bool:
     except Exception as e:
         results["29. Security Header: Cache-Control: no-store"] = f"FAIL: {type(e).__name__}: {e}"
 
-    # TEST 30 — CORS origin filtering restricts unauthorized origins, blocks wildcard in production, and allows Vercel origin
+    # TEST 30 — CORS origin filtering: production, project Vercel preview/deployments, localhost, and malicious origin rejection
     try:
         from main import cors_origins
         assert isinstance(cors_origins, list)
@@ -485,8 +485,8 @@ def run_phase13_tests() -> bool:
         prod_origins = [o for o in cors_origins if o != "*"]
         assert "*" not in prod_origins
 
-        # Specific regression test for OPTIONS /ask with Vercel production origin
-        options_resp = client.options(
+        # 1. Production Vercel origin -> Allowed
+        prod_resp = client.options(
             "/ask",
             headers={
                 "Origin": "https://sih-bis-assistant.vercel.app",
@@ -494,10 +494,63 @@ def run_phase13_tests() -> bool:
                 "Access-Control-Request-Headers": "content-type"
             }
         )
-        assert options_resp.status_code == 200, f"Expected 200 on OPTIONS /ask, got {options_resp.status_code}"
-        assert options_resp.headers.get("access-control-allow-origin") == "https://sih-bis-assistant.vercel.app", (
-            f"Expected Access-Control-Allow-Origin: https://sih-bis-assistant.vercel.app, "
-            f"got {options_resp.headers.get('access-control-allow-origin')}"
+        assert prod_resp.status_code == 200, f"Expected 200 on production OPTIONS /ask, got {prod_resp.status_code}"
+        assert prod_resp.headers.get("access-control-allow-origin") == "https://sih-bis-assistant.vercel.app", (
+            f"Expected ACAO https://sih-bis-assistant.vercel.app, got {prod_resp.headers.get('access-control-allow-origin')}"
+        )
+
+        # 2. Valid Vercel preview/deployment origins matching this project -> Allowed
+        preview_origins = [
+            "https://sih-bis-assistant-deploy123-projects.vercel.app",
+            "https://sih-bis-assistant-git-main-projects.vercel.app",
+            "https://sih-bis-assistant-preview.vercel.app"
+        ]
+        for prev_origin in preview_origins:
+            prev_resp = client.options(
+                "/ask",
+                headers={
+                    "Origin": prev_origin,
+                    "Access-Control-Request-Method": "POST",
+                    "Access-Control-Request-Headers": "content-type"
+                }
+            )
+            assert prev_resp.status_code == 200, f"Expected 200 for preview origin {prev_origin}, got {prev_resp.status_code}"
+            assert prev_resp.headers.get("access-control-allow-origin") == prev_origin, (
+                f"Expected ACAO {prev_origin}, got {prev_resp.headers.get('access-control-allow-origin')}"
+            )
+
+        # 3. Malicious unrelated Vercel/external origins -> Rejected
+        malicious_origins = [
+            "https://malicious-attacker.vercel.app",
+            "https://fake-sih-bis-assistant.vercel.app",
+            "https://sih-bis-assistant.evil-domain.com",
+            "http://attacker.com"
+        ]
+        for mal_origin in malicious_origins:
+            mal_resp = client.options(
+                "/ask",
+                headers={
+                    "Origin": mal_origin,
+                    "Access-Control-Request-Method": "POST",
+                    "Access-Control-Request-Headers": "content-type"
+                }
+            )
+            assert "access-control-allow-origin" not in mal_resp.headers, (
+                f"Expected malicious origin {mal_origin} to be rejected without ACAO, but got {mal_resp.headers.get('access-control-allow-origin')}"
+            )
+
+        # 4. Localhost development origin -> Allowed
+        dev_resp = client.options(
+            "/ask",
+            headers={
+                "Origin": "http://localhost:5173",
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": "content-type"
+            }
+        )
+        assert dev_resp.status_code == 200, f"Expected 200 for dev origin, got {dev_resp.status_code}"
+        assert dev_resp.headers.get("access-control-allow-origin") == "http://localhost:5173", (
+            f"Expected ACAO http://localhost:5173, got {dev_resp.headers.get('access-control-allow-origin')}"
         )
 
         results["30. CORS Configuration & Production Wildcard Block Test"] = "PASS"

@@ -105,11 +105,20 @@ if is_production and "*" in cors_origins:
     if not cors_origins:
         cors_origins = ["https://sih-bis-assistant.vercel.app"]
 
+# Secure Vercel deployment origin regex matching this project:
+# Matches production https://sih-bis-assistant.vercel.app and preview deployments like
+# https://sih-bis-assistant-<deployment-id>-projects.vercel.app or https://sih-bis-assistant-*.vercel.app
+PROJECT_VERCEL_ORIGIN_REGEX = os.environ.get(
+    "CORS_ORIGIN_REGEX",
+    r"^https:\/\/sih-bis-assistant(-[a-zA-Z0-9_-]+)?\.vercel\.app$"
+)
+
 allow_credentials = "*" not in cors_origins
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
+    allow_origin_regex=PROJECT_VERCEL_ORIGIN_REGEX,
     allow_credentials=allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],

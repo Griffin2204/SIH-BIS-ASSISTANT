@@ -8,12 +8,29 @@ VECTOR_STORE_DIR = os.environ.get("CHROMA_PERSIST_DIRECTORY", os.path.join(BASE_
 DEFAULT_COLLECTION_NAME = os.environ.get("CHROMA_COLLECTION_NAME", "bis_documents_multilingual")
 
 
+def get_default_collection_name() -> str:
+    """
+    Returns the appropriate isolated ChromaDB collection name based on the active embedding provider.
+    SentenceTransformer and Gemini embeddings reside in incompatible vector spaces and MUST NOT be mixed.
+    """
+    env_name = os.environ.get("CHROMA_COLLECTION_NAME")
+    if env_name:
+        return env_name
+    try:
+        from services.embedding_service import embedding_service
+        if embedding_service._should_use_gemini():
+            return "bis_documents_gemini_multilingual"
+    except Exception:
+        pass
+    return "bis_documents_multilingual"
+
+
 class VectorStoreService:
     _instance: Optional['VectorStoreService'] = None
 
     def __init__(self, persist_directory: str = VECTOR_STORE_DIR, collection_name: Optional[str] = None):
         self.persist_directory = persist_directory
-        self.collection_name = collection_name or os.environ.get("CHROMA_COLLECTION_NAME", DEFAULT_COLLECTION_NAME)
+        self.collection_name = collection_name or get_default_collection_name()
         self._client: Optional[Any] = None
         self._collection: Optional[Any] = None
 
@@ -22,8 +39,8 @@ class VectorStoreService:
         """
         Singleton pattern to ensure persistent ChromaDB client is initialized once and reused.
         """
-        target_coll = collection_name or os.environ.get("CHROMA_COLLECTION_NAME", DEFAULT_COLLECTION_NAME)
-        if cls._instance is None or (collection_name is not None and cls._instance.collection_name != target_coll):
+        target_coll = collection_name or get_default_collection_name()
+        if cls._instance is None or cls._instance.collection_name != target_coll:
             cls._instance = cls(persist_directory=persist_directory, collection_name=target_coll)
         return cls._instance
 

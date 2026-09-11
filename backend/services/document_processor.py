@@ -158,7 +158,7 @@ def process_document(
         cleaned_text_length=len(cleaned),
         chunk_count=len(embedded_chunks),
         pages=pages,
-        embedding_model=embedder.model_name,
+        embedding_model=getattr(embedder, "active_model_name", embedder.model_name),
         embedding_dimension=embedder.dimension,
         vector_store_status=store_status
     )

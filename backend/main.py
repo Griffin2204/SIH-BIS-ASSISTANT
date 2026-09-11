@@ -755,7 +755,7 @@ def reindex_documents():
     return ReindexResponse(
         message="All uploaded documents reindexed successfully into active collection.",
         documents_reindexed=len(reindexed_ids),
-        active_embedding_model=embedder.model_name,
+        active_embedding_model=getattr(embedder, "active_model_name", embedder.model_name),
         active_collection=vs.collection_name,
         documents=reindexed_ids
     )

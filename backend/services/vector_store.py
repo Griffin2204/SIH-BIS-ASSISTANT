@@ -1,12 +1,9 @@
 import os
 from typing import List, Dict, Any, Optional
-import chromadb
-from chromadb.config import Settings
 from services.chunker import DocumentChunk
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VECTOR_STORE_DIR = os.environ.get("CHROMA_PERSIST_DIRECTORY", os.path.join(BASE_DIR, "vector_store"))
-os.makedirs(VECTOR_STORE_DIR, exist_ok=True)
 
 DEFAULT_COLLECTION_NAME = os.environ.get("CHROMA_COLLECTION_NAME", "bis_documents_multilingual")
 
@@ -17,8 +14,8 @@ class VectorStoreService:
     def __init__(self, persist_directory: str = VECTOR_STORE_DIR, collection_name: Optional[str] = None):
         self.persist_directory = persist_directory
         self.collection_name = collection_name or os.environ.get("CHROMA_COLLECTION_NAME", DEFAULT_COLLECTION_NAME)
-        self._client: Optional[chromadb.PersistentClient] = None
-        self._collection = None
+        self._client: Optional[Any] = None
+        self._collection: Optional[Any] = None
 
     @classmethod
     def get_instance(cls, persist_directory: str = VECTOR_STORE_DIR, collection_name: Optional[str] = None) -> 'VectorStoreService':
@@ -30,11 +27,20 @@ class VectorStoreService:
             cls._instance = cls(persist_directory=persist_directory, collection_name=target_coll)
         return cls._instance
 
+    @property
+    def is_initialized(self) -> bool:
+        """
+        Returns True if the ChromaDB client and collection have been initialized.
+        """
+        return self._client is not None and self._collection is not None
+
     def _init_db(self):
         """
         Initializes persistent ChromaDB client and gets or creates the target collection.
+        Lazy initialization: connects to ChromaDB only when actually needed.
         """
         if self._client is None or self._collection is None:
+            import chromadb
             os.makedirs(self.persist_directory, exist_ok=True)
             self._client = chromadb.PersistentClient(path=self.persist_directory)
             self._collection = self._client.get_or_create_collection(

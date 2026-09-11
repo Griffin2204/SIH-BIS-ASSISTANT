@@ -1,6 +1,5 @@
 import os
 from typing import List, Dict, Any, Optional
-from sentence_transformers import SentenceTransformer
 
 DEFAULT_MODEL_NAME = os.environ.get("EMBEDDING_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 DEFAULT_BATCH_SIZE = 32
@@ -11,7 +10,7 @@ class EmbeddingService:
 
     def __init__(self, model_name: Optional[str] = None):
         self.model_name = model_name or os.environ.get("EMBEDDING_MODEL", DEFAULT_MODEL_NAME)
-        self._model: Optional[SentenceTransformer] = None
+        self._model: Optional[Any] = None
         self._dimension: Optional[int] = None
 
     @classmethod
@@ -25,22 +24,42 @@ class EmbeddingService:
             cls._instance = cls(model_name=target_model)
         return cls._instance
 
-    def _load_model(self) -> SentenceTransformer:
+    @property
+    def is_model_loaded(self) -> bool:
+        """
+        Returns True if the underlying embedding model has been loaded into memory.
+        """
+        return self._model is not None
+
+    def _load_model(self) -> Any:
         """
         Lazy initialization: loads SentenceTransformer model on CPU when first requested.
+        Does NOT run at module import time or during FastAPI startup.
         """
         if self._model is None:
+            from sentence_transformers import SentenceTransformer
             # Model execution on CPU with L2 normalization
             self._model = SentenceTransformer(self.model_name, device="cpu")
-            sample_emb = self._model.encode("sample test query", normalize_embeddings=True)
-            self._dimension = len(sample_emb)
+            try:
+                if hasattr(self._model, "get_embedding_dimension"):
+                    self._dimension = self._model.get_embedding_dimension() or 384
+                elif hasattr(self._model, "get_sentence_embedding_dimension"):
+                    self._dimension = self._model.get_sentence_embedding_dimension() or 384
+                else:
+                    self._dimension = 384
+            except Exception:
+                self._dimension = 384
         return self._model
 
     @property
     def dimension(self) -> int:
-        if self._dimension is None:
-            self._load_model()
-        return self._dimension or 384
+        """
+        Returns the embedding dimension. If model is not loaded yet, returns the
+        known dimension (384) without triggering heavyweight model download or loading.
+        """
+        if self._dimension is not None:
+            return self._dimension
+        return 384
 
     def embed_text(self, text: str) -> List[float]:
         """

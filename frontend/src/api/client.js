@@ -210,7 +210,7 @@ export async function recommendStandards(productSpecs) {
 }
 
 /**
- * 4. POST /api/documents/upload - Document Processing & OCR
+ * 4. POST /documents/upload - Document Processing & Vector Indexing
  */
 export async function uploadDocument(file) {
   if (!file) {
@@ -228,26 +228,92 @@ export async function uploadDocument(file) {
     throw new Error('Unsupported file type. Please upload a PDF, DOCX, or TXT file.');
   }
 
-  return fetchWithFallback(
-    '/api/documents/upload',
-    {
-      method: 'POST',
-      body: JSON.stringify({ filename: file.name, size: file.size }),
-    },
-    async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-      return {
-        fileId: `DOC-${Date.now()}`,
-        filename: file.name,
-        fileSizeFormatted: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
-        status: 'Extracted & Analyzed',
-        extractedText: `SAMPLE OCR EXTRACT: Product: PVC Electrical Conduit. Test Voltage: 1100V. Manufacturer: Polycab Wires. Standard Reference: IS 694. Compliance Pass rate: 98.4%.`,
-        identifiedStandard: 'IS 694:2010',
-        confidenceScore: '96.5%',
-        suggestedActions: ['Apply for SIT Endorsement', 'Schedule Audit']
-      };
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch(`${API_BASE_URL}/documents/upload`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    let errorMsg = `Upload failed (${response.status})`;
+    if (response.status === 413) {
+      errorMsg = 'File size exceeds maximum allowed limit (15 MB).';
+    } else if (response.status === 422) {
+      errorMsg = 'Failed to process document text or extract readable content.';
     }
-  );
+    try {
+      const errBody = await response.json();
+      if (errBody?.detail) {
+        if (Array.isArray(errBody.detail)) {
+          errorMsg = errBody.detail.map((d) => d.msg || d.message).join('; ');
+        } else {
+          errorMsg = String(errBody.detail);
+        }
+      }
+    } catch (_) {}
+    throw new Error(errorMsg);
+  }
+
+  const data = await response.json();
+  return { data, isMock: false };
+}
+
+/**
+ * 5. GET /documents - Retrieve list of uploaded & indexed documents
+ */
+export async function getDocuments() {
+  const response = await fetch(`${API_BASE_URL}/documents`, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    let errorMsg = `Failed to fetch documents (${response.status})`;
+    try {
+      const errBody = await response.json();
+      if (errBody?.detail) {
+        if (Array.isArray(errBody.detail)) {
+          errorMsg = errBody.detail.map((d) => d.msg || d.message).join('; ');
+        } else {
+          errorMsg = String(errBody.detail);
+        }
+      }
+    } catch (_) {}
+    throw new Error(errorMsg);
+  }
+
+  const data = await response.json();
+  return { data: data.documents || [], isMock: false };
+}
+
+/**
+ * 6. GET /documents/:id/chunks - Retrieve chunk metadata for a document
+ */
+export async function getDocumentChunks(documentId) {
+  const response = await fetch(`${API_BASE_URL}/documents/${encodeURIComponent(documentId)}/chunks`, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    let errorMsg = `Failed to fetch chunks (${response.status})`;
+    try {
+      const errBody = await response.json();
+      if (errBody?.detail) {
+        errorMsg = String(errBody.detail);
+      }
+    } catch (_) {}
+    throw new Error(errorMsg);
+  }
+
+  const data = await response.json();
+  return { data, isMock: false };
 }
 
 /**

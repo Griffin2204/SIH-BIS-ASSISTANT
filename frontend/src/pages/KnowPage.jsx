@@ -10,7 +10,7 @@ import DisclaimerBanner from '../components/common/DisclaimerBanner';
 import RAGCitationCard from '../components/common/RAGCitationCard';
 import VoiceInputModal from '../components/common/VoiceInputModal';
 import CameraCaptureModal from '../components/common/CameraCaptureModal';
-import { sendChatMessage, searchStandards, recommendStandards } from '../api/client';
+import { sendChatMessage, searchStandards, recommendStandards, getBISServices, searchBIS } from '../api/client';
 import { CATEGORIES } from '../data/mockStandards';
 import { MOCK_SUGGESTED_QUESTIONS } from '../data/mockChat';
 import { useLanguage } from '../context/LanguageContext';
@@ -28,7 +28,8 @@ import {
   ExternalLink,
   ChevronDown,
   ChevronUp,
-  ShieldCheck
+  ShieldCheck,
+  Globe
 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import './KnowPage.css';
@@ -120,6 +121,7 @@ function ChatTabPanel() {
   const [copiedId, setCopiedId] = useState(null);
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [chatLanguage, setChatLanguage] = useState('auto');
 
   const handleSend = async (textToSend) => {
     const query = textToSend || inputQuery;
@@ -137,14 +139,15 @@ function ChatTabPanel() {
     setIsLoading(true);
 
     try {
-      const res = await sendChatMessage(query);
+      const res = await sendChatMessage(query, chatLanguage);
       const botMsg = {
         id: Date.now() + 1,
         sender: 'bot',
         text: res.data.answer,
+        language: res.data.language,
         confidenceScore: res.data.confidenceScore,
         confidenceLabel: res.data.confidenceLabel,
-        citations: res.data.citations || [],
+        citations: res.data.citations || res.data.sources || [],
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages((prev) => [...prev, botMsg]);
@@ -154,7 +157,7 @@ function ChatTabPanel() {
         {
           id: Date.now() + 1,
           sender: 'bot',
-          text: 'Unable to reach the assistant at the moment. Please check network connection.',
+          text: `Error connecting to backend: ${err.message || 'Unable to reach backend service'}. Please ensure backend is running.`,
           citations: [],
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
@@ -189,9 +192,35 @@ function ChatTabPanel() {
           <ShieldCheck size={16} className="text-success" />
           {t('ragGuardrailed')} Active
         </span>
-        <Button variant="ghost" size="sm" icon={Trash2} onClick={handleClear}>
-          {t('clearChatBtn')}
-        </Button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#f8fafc', padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+            <Globe size={14} style={{ color: '#64748b' }} />
+            <select
+              value={chatLanguage}
+              onChange={(e) => setChatLanguage(e.target.value)}
+              aria-label="Select Chat Language"
+              style={{
+                fontSize: '0.82rem',
+                border: 'none',
+                background: 'transparent',
+                color: '#334155',
+                outline: 'none',
+                cursor: 'pointer',
+                fontWeight: '500'
+              }}
+            >
+              <option value="auto">Auto (Detect)</option>
+              <option value="en">English</option>
+              <option value="hi">हिन्दी (Hindi)</option>
+              <option value="mr">मराठी (Marathi)</option>
+            </select>
+          </div>
+
+          <Button variant="ghost" size="sm" icon={Trash2} onClick={handleClear}>
+            {t('clearChatBtn')}
+          </Button>
+        </div>
       </div>
 
       {/* Suggested Questions */}
@@ -217,6 +246,11 @@ function ChatTabPanel() {
             <div className="chat-bubble-content">
               <div className="bubble-header">
                 <span className="bubble-author">{msg.sender === 'bot' ? t('appTitle') : 'User'}</span>
+                {msg.language && (
+                  <Badge variant="neutral" style={{ fontSize: '0.72rem', padding: '1px 6px', marginLeft: '6px' }}>
+                    {msg.language === 'hi' ? 'हिन्दी' : msg.language === 'mr' ? 'मराठी' : 'English'}
+                  </Badge>
+                )}
                 <span className="bubble-time">{msg.timestamp}</span>
               </div>
 
@@ -314,29 +348,48 @@ function SearchTabPanel({ initialQuery }) {
   const { t } = useLanguage();
   const [query, setQuery] = useState(initialQuery || '');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
-  const [mandatoryOnly, setMandatoryOnly] = useState(false);
+  const [serviceCategories, setServiceCategories] = useState([]);
+  const [selectedService, setSelectedService] = useState('');
+  const [bisSearchData, setBisSearchData] = useState(null);
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedStandard, setSelectedStandard] = useState(null);
+  const [searchLang, setSearchLang] = useState('auto');
+
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        const res = await getBISServices();
+        setServiceCategories(res.data || []);
+      } catch (_) {
+        setServiceCategories([]);
+      }
+    }
+    loadCategories();
+  }, []);
 
   useEffect(() => {
     async function loadData() {
       setIsLoading(true);
       try {
-        const res = await searchStandards(query, selectedCategory);
-        let list = res.data;
-        if (mandatoryOnly) {
-          list = list.filter((s) => s.mandatory);
+        if (query.trim()) {
+          const bisRes = await searchBIS(query, selectedService || null, searchLang);
+          setBisSearchData(bisRes.data);
+        } else {
+          setBisSearchData(null);
         }
-        setResults(list);
+
+        const res = await searchStandards(query, selectedCategory);
+        setResults(res.data || []);
       } catch (e) {
         setResults([]);
+        setBisSearchData(null);
       } finally {
         setIsLoading(false);
       }
     }
     loadData();
-  }, [query, selectedCategory, mandatoryOnly]);
+  }, [query, selectedCategory, selectedService, searchLang]);
 
   return (
     <div className="search-tab-container">
@@ -345,12 +398,37 @@ function SearchTabPanel({ initialQuery }) {
           <SearchInput
             value={query}
             onChange={setQuery}
-            placeholder={t('searchPlaceholder')}
+            placeholder="Search BIS services, Indian Standards (e.g. IS 10500), certification, licensing..."
             size="lg"
           />
         </div>
 
-        <div className="filters-row">
+        {serviceCategories.length > 0 && (
+          <div className="service-chips-row" style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', alignSelf: 'center', fontWeight: '500' }}>Service Categories:</span>
+            <button
+              type="button"
+              className={`suggested-chip ${!selectedService ? 'selected' : ''}`}
+              style={{ background: !selectedService ? 'var(--primary-color, #2563eb)' : '#f1f5f9', color: !selectedService ? '#fff' : '#334155' }}
+              onClick={() => setSelectedService('')}
+            >
+              All Services
+            </button>
+            {serviceCategories.slice(0, 6).map((cat) => (
+              <button
+                key={cat.id}
+                type="button"
+                className="suggested-chip"
+                style={{ background: selectedService === cat.id ? 'var(--primary-color, #2563eb)' : '#f1f5f9', color: selectedService === cat.id ? '#fff' : '#334155' }}
+                onClick={() => setSelectedService(selectedService === cat.id ? '' : cat.id)}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="filters-row" style={{ marginTop: '12px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
           <div className="filter-group">
             <label className="filter-label">{t('filterCategory')}</label>
             <select
@@ -364,56 +442,102 @@ function SearchTabPanel({ initialQuery }) {
             </select>
           </div>
 
-          <label className="mandatory-checkbox-label">
-            <input
-              type="checkbox"
-              checked={mandatoryOnly}
-              onChange={(e) => setMandatoryOnly(e.target.checked)}
-            />
-            <span>{t('mandatoryOnlyCheck')}</span>
-          </label>
+          <div className="filter-group">
+            <label className="filter-label">Language / भाषा</label>
+            <select
+              className="filter-select"
+              value={searchLang}
+              onChange={(e) => setSearchLang(e.target.value)}
+            >
+              <option value="auto">Auto (Detect)</option>
+              <option value="en">English</option>
+              <option value="hi">हिन्दी (Hindi)</option>
+              <option value="mr">मराठी (Marathi)</option>
+            </select>
+          </div>
         </div>
       </div>
 
       {isLoading ? (
-        <LoadingState message="Searching Indian Standards Directory..." />
-      ) : results.length === 0 ? (
-        <EmptyState
-          title="No Indian Standards found"
-          description={`No results matching "${query}". Try broadening your search or removing category filters.`}
-        />
+        <LoadingState message="Searching authoritative BIS knowledge base & Indian Standards directory..." />
       ) : (
-        <div className="standards-grid">
-          {results.map((st) => (
-            <Card key={st.id} hoverable className="standard-card">
-              <div className="standard-card-header">
-                <span className="standard-code">{st.code}</span>
-                <Badge variant={st.mandatory ? 'error' : 'neutral'}>
-                  {st.mandatory ? 'Mandatory ISI' : 'Voluntary'}
-                </Badge>
-              </div>
+        <>
+          {bisSearchData && (
+            <div className="bis-search-results-box" style={{ marginBottom: '24px' }}>
+              <Card title="BIS Search & Grounded Analysis">
+                <div className="bis-search-meta-row" style={{ display: 'flex', gap: '10px', marginBottom: '14px', flexWrap: 'wrap' }}>
+                  <Badge variant="info" dot>Intent: {bisSearchData.intent}</Badge>
+                  {bisSearchData.detected_standard && (
+                    <Badge variant="success" dot>Detected Standard: {bisSearchData.detected_standard}</Badge>
+                  )}
+                  {bisSearchData.language && (
+                    <Badge variant="neutral">Language: {bisSearchData.language.toUpperCase()}</Badge>
+                  )}
+                  {bisSearchData.service_filter && (
+                    <Badge variant="neutral">Service Filter: {bisSearchData.service_filter}</Badge>
+                  )}
+                </div>
 
-              <h4 className="standard-title">{st.title}</h4>
-              <p className="standard-desc">{st.description}</p>
-
-              <div className="standard-meta">
-                <span className="meta-tag">{st.category}</span>
-                <span className="meta-dept">{st.department}</span>
-              </div>
-
-              <div className="standard-card-footer">
-                <Button variant="outline" size="sm" onClick={() => setSelectedStandard(st)}>
-                  {t('viewParametersBtn')}
-                </Button>
-                {st.officialUrl && (
-                  <a href={st.officialUrl} target="_blank" rel="noopener noreferrer" className="pdf-link-btn">
-                    <ExternalLink size={14} /> PDF
-                  </a>
+                {bisSearchData.answer && (
+                  <div className="bis-answer-box" style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #2563eb', marginBottom: '16px' }}>
+                    <h5 style={{ margin: '0 0 8px 0', fontSize: '0.95rem', color: '#1e293b' }}>Grounded Answer:</h5>
+                    <p style={{ margin: 0, color: '#334155', lineHeight: '1.6' }}>{bisSearchData.answer}</p>
+                  </div>
                 )}
-              </div>
-            </Card>
-          ))}
-        </div>
+
+                {bisSearchData.sources && bisSearchData.sources.length > 0 && (
+                  <div className="bis-sources-section">
+                    <h5 style={{ margin: '0 0 12px 0', fontSize: '0.9rem', color: '#475569' }}>Authoritative Sources & Citations ({bisSearchData.sources.length}):</h5>
+                    <div className="citations-list">
+                      {bisSearchData.sources.map((src, idx) => (
+                        <RAGCitationCard key={idx} citation={src} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </Card>
+            </div>
+          )}
+
+          {results.length === 0 && !bisSearchData ? (
+            <EmptyState
+              title="No Indian Standards found"
+              description={`No results matching "${query}". Try broadening your search or removing category filters.`}
+            />
+          ) : (
+            <div className="standards-grid">
+              {results.map((st) => (
+                <Card key={st.id} hoverable className="standard-card">
+                  <div className="standard-card-header">
+                    <span className="standard-code">{st.code}</span>
+                    <Badge variant={st.mandatory ? 'error' : 'neutral'}>
+                      {st.mandatory ? 'Mandatory ISI' : 'Voluntary'}
+                    </Badge>
+                  </div>
+
+                  <h4 className="standard-title">{st.title}</h4>
+                  <p className="standard-desc">{st.description}</p>
+
+                  <div className="standard-meta">
+                    <span className="meta-tag">{st.category}</span>
+                    <span className="meta-dept">{st.department}</span>
+                  </div>
+
+                  <div className="standard-card-footer">
+                    <Button variant="outline" size="sm" onClick={() => setSelectedStandard(st)}>
+                      {t('viewParametersBtn')}
+                    </Button>
+                    {st.officialUrl && (
+                      <a href={st.officialUrl} target="_blank" rel="noopener noreferrer" className="pdf-link-btn">
+                        <ExternalLink size={14} /> PDF
+                      </a>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {/* Standard Details Modal */}

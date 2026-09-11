@@ -1,5 +1,31 @@
-node_modules
-.DS_Store
-dist
-dist-ssr
-*.local
+# Environment variables & secrets
+.env
+.env.local
+.env.*.local
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+backend/venv/
+*.sqlite3
+
+# Document uploads & Vector Store persistent data
+backend/documents/uploads/*
+!backend/documents/uploads/.gitkeep
+backend/vector_store/*
+!backend/vector_store/.gitkeep
+
+# Node / Frontend
+node_modules/
+dist/
+.output/
+.vite/
+
+# Deployment & Local Volume mounts
+data/
+docker-compose.override.yml
+*.log
+

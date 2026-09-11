@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: bis_assistant_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - ENVIRONMENT=production
+      - UPLOAD_DIR=/data/uploads
+      - CHROMA_PERSIST_DIRECTORY=/data/vector_store
+      - CHROMA_COLLECTION_NAME=bis_documents_multilingual
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:80,http://127.0.0.1:80
+      - LLM_PROVIDER=${LLM_PROVIDER:-gemini}
+      - LLM_MODEL=${LLM_MODEL:-gemini-2.5-flash}
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - MULTILINGUAL_ENABLED=true
+      - RATE_LIMIT_ENABLED=true
+      - RATE_LIMIT_MAX_REQUESTS=60
+      - RATE_LIMIT_WINDOW_SECONDS=60
+    volumes:
+      - bis_uploads:/data/uploads
+      - bis_vector_store:/data/vector_store
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=""
+    container_name: bis_assistant_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  bis_uploads:
+    driver: local
+  bis_vector_store:
+    driver: local

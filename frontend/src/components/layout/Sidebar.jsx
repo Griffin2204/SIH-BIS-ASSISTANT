@@ -108,8 +108,8 @@ export function Sidebar({ isOpen, onClose }) {
           <div className="sidebar-help-card">
             <HelpCircle size={20} className="help-icon" />
             <div className="help-text">
-              <span className="help-title">SIH 2026 Portal</span>
-              <span className="help-desc">Team: localhost:8008</span>
+              <span className="help-title">National Standards</span>
+              <span className="help-desc">AI Assistant Platform</span>
             </div>
           </div>
         </div>

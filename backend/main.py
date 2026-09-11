@@ -55,7 +55,7 @@ async def security_headers_middleware(request: Request, call_next):
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["X-XSS-Protection"] = "1; mode=block"
-    if request.url.path.startswith(("/ask", "/retrieve", "/bis", "/documents")):
+    if request.method != "OPTIONS" and request.url.path.startswith(("/ask", "/retrieve", "/bis", "/documents")):
         response.headers["Cache-Control"] = "no-store, max-age=0"
     return response
 
@@ -75,24 +75,35 @@ async def rate_limit_middleware(request: Request, call_next):
     return await call_next(request)
 
 # Configure CORS Middleware
-raw_origins = os.environ.get("CORS_ALLOWED_ORIGINS", "").strip()
+DEFAULT_ALLOWED_ORIGINS = [
+    "https://sih-bis-assistant.vercel.app",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:8009",
+    "http://127.0.0.1:8009",
+]
+
+raw_origins = (os.environ.get("CORS_ALLOWED_ORIGINS", "") or os.environ.get("ALLOWED_ORIGINS", "")).strip()
+configured_origins: List[str] = []
 if raw_origins:
-    cors_origins = [orig.strip() for orig in raw_origins.split(",") if orig.strip()]
-else:
-    cors_origins = [
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:8000",
-        "http://127.0.0.1:8000",
-        "http://localhost:8009",
-        "http://127.0.0.1:8009",
-    ]
+    for orig in raw_origins.split(","):
+        cleaned = orig.strip().strip("'\"").rstrip("/")
+        if cleaned:
+            configured_origins.append(cleaned)
+
+# Merge configured origins with default origins (preserving order without duplicates)
+cors_origins: List[str] = []
+for o in (configured_origins + DEFAULT_ALLOWED_ORIGINS):
+    if o not in cors_origins:
+        cors_origins.append(o)
 
 is_production = os.environ.get("ENVIRONMENT", "").lower() == "production" or os.environ.get("APP_ENV", "").lower() == "production"
 if is_production and "*" in cors_origins:
     cors_origins = [o for o in cors_origins if o != "*"]
     if not cors_origins:
-        cors_origins = ["http://127.0.0.1:8000"]
+        cors_origins = ["https://sih-bis-assistant.vercel.app"]
 
 allow_credentials = "*" not in cors_origins
 
@@ -100,8 +111,10 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
     allow_credentials=allow_credentials,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=600,
 )
 
 # Upload directory configuration
@@ -351,6 +364,12 @@ def read_root():
         "status": "healthy",
         "message": "BIS AI Assistant Backend API is running"
     }
+
+
+@app.options("/ask", status_code=status.HTTP_200_OK)
+def options_ask():
+    """Explicit preflight handler for /ask endpoint."""
+    return JSONResponse(status_code=status.HTTP_200_OK, content={"status": "ok"})
 
 
 @app.post("/ask", response_model=QuestionResponse, status_code=status.HTTP_200_OK)

@@ -477,13 +477,29 @@ def run_phase13_tests() -> bool:
     except Exception as e:
         results["29. Security Header: Cache-Control: no-store"] = f"FAIL: {type(e).__name__}: {e}"
 
-    # TEST 30 — CORS origin filtering restricts unauthorized origins and blocks wildcard in production
+    # TEST 30 — CORS origin filtering restricts unauthorized origins, blocks wildcard in production, and allows Vercel origin
     try:
         from main import cors_origins
         assert isinstance(cors_origins, list)
         assert len(cors_origins) > 0
         prod_origins = [o for o in cors_origins if o != "*"]
         assert "*" not in prod_origins
+
+        # Specific regression test for OPTIONS /ask with Vercel production origin
+        options_resp = client.options(
+            "/ask",
+            headers={
+                "Origin": "https://sih-bis-assistant.vercel.app",
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": "content-type"
+            }
+        )
+        assert options_resp.status_code == 200, f"Expected 200 on OPTIONS /ask, got {options_resp.status_code}"
+        assert options_resp.headers.get("access-control-allow-origin") == "https://sih-bis-assistant.vercel.app", (
+            f"Expected Access-Control-Allow-Origin: https://sih-bis-assistant.vercel.app, "
+            f"got {options_resp.headers.get('access-control-allow-origin')}"
+        )
+
         results["30. CORS Configuration & Production Wildcard Block Test"] = "PASS"
     except Exception as e:
         results["30. CORS Configuration & Production Wildcard Block Test"] = f"FAIL: {type(e).__name__}: {e}"
